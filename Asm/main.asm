@@ -90,13 +90,17 @@ proc subclass_proc uses esi edi, hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefD
    .if [esi + tThreadParams.pHostObject]
        .if [esi + tThreadParams.lPaused] = 0
 
-	   call [esi + tThreadParams.pfnEbMode]
+	   .if [esi + tThreadParams.pfnEbMode]
 
-	   .if eax = 0
-	       stdcall uninitialize, esi
-	       jmp .def_call
-	   .elseif eax = 2
-	       jmp .def_call
+	       call [esi + tThreadParams.pfnEbMode]
+
+	       .if eax = 0
+		   stdcall uninitialize, esi
+		   jmp .def_call
+	       .elseif eax = 2
+		   jmp .def_call
+	       .endif
+
 	   .endif
 
 	   sub esp, 0x08

@@ -74,6 +74,9 @@ Private Declare Function CreateFileMapping Lib "kernel32" _
 Private Declare Function GetProcAddress Lib "kernel32" ( _
                          ByVal hModule As Long, _
                          ByVal lpProcName As String) As Long
+Private Declare Function LoadLibrary Lib "kernel32" _
+                         Alias "LoadLibraryW" ( _
+                         ByVal lpModuleName As Long) As Long
 Private Declare Function GetModuleHandle Lib "kernel32" _
                          Alias "GetModuleHandleW" ( _
                          ByVal lpModuleName As Long) As Long
@@ -277,7 +280,7 @@ Private Sub Class_Initialize()
     Dim hMapping    As Long
     Dim pCode       As Long
     Dim lTemp       As Long
-    Dim cOp(44)     As Currency
+    Dim cOp(45)     As Currency
     Dim lCodeSize   As Long
     Dim hComctl32   As Long
     Dim hMSVBVM60   As Long
@@ -286,10 +289,17 @@ Private Sub Class_Initialize()
     Dim vResult     As Variant
     Dim lIndex      As Long
     Dim sAPIName    As String
+    Dim bIsInIDE    As Boolean
+    Dim lCount      As Long
     
-    hComctl32 = GetModuleHandle(StrPtr("comctl32"))
+    Debug.Assert MakeTrue(bIsInIDE)
+    
+    hComctl32 = LoadLibrary(StrPtr("comctl32"))
     hMSVBVM60 = GetModuleHandle(StrPtr("msvbvm60"))
-    hVBA6 = GetModuleHandle(StrPtr("vba6"))
+    
+    If bIsInIDE Then
+        hVBA6 = GetModuleHandle(StrPtr("vba6"))
+    End If
     
     ' //
     ' // The code structure
@@ -306,22 +316,28 @@ Private Sub Class_Initialize()
     
     lCodeSize = (UBound(cOp) + 1) * 8 + 8
     
-    cOp(0) = -172700121577779.7803@:  cOp(1) = 700803790855680.8192@:   cOp(2) = 31721576780.7625@:       cOp(3) = 8711821113678.464@
-    cOp(4) = 479226671698024.8576@:   cOp(5) = 508377703192199.1681@:   cOp(6) = -857365021913051.7204@:  cOp(7) = 443382.3494@
+    cOp(0) = -172700121577779.7803@:  cOp(1) = 700803790855680.8192@:   cOp(2) = 32381283757.4281@:       cOp(3) = 8880706099704.8576@
+    cOp(4) = 522461228120781.6192@:   cOp(5) = 508377703192199.1681@:   cOp(6) = -857365021913051.7204@:  cOp(7) = 443382.3494@
     cOp(8) = -441089100593967.8792@:  cOp(9) = 846995906805189.8372@:   cOp(10) = 620186570542432.3336@:  cOp(11) = 626874291154953.5999@
-    cOp(12) = 20596.508@:             cOp(13) = -190689950864645.9042@: cOp(14) = 147676186889862.127@:   cOp(15) = -900719925228286.3872@
-    cOp(16) = 14570701717.9262@:      cOp(17) = 843101174457165.3888@:  cOp(18) = -144115188203517.7974@: cOp(19) = 17705102672448.1918@
-    cOp(20) = -852075658058744.0661@: cOp(21) = -7089181630934.9372@:   cOp(22) = 24609712691474.0479@:   cOp(23) = 576556884000335.4448@
-    cOp(24) = -4953584075640.2689@:   cOp(25) = 609261384650090.6101@:  cOp(26) = 1801814506853.2772@:    cOp(27) = 578778538418512.2816@
-    cOp(28) = 763991036611736.6632@:  cOp(29) = -899809640192625.8943@: cOp(30) = 897212707049487.8916@:  cOp(31) = -150619567099681.2764@
-    cOp(32) = -393660350491023.487@:  cOp(33) = -151069927721768.7358@: cOp(34) = -342410.2891@:          cOp(35) = 89790414689449.2789@
-    cOp(36) = 680018512232424.8063@:  cOp(37) = 29843883910606.1001@:   cOp(38) = -170686257064756.5173@: cOp(39) = 91950859062293.2997@
-    cOp(40) = 30652516791461.76@:     cOp(41) = 493904143677680.8587@:  cOp(42) = 576783240904304.3364@:  cOp(43) = -30576596923.7885@
-    cOp(44) = 133922342537.4463@:
+    cOp(12) = 20596.508@:             cOp(13) = -190689950864645.9042@: cOp(14) = 147676186889862.127@:   cOp(15) = -900719925218220.0576@
+    cOp(16) = 15230408694.5918@:      cOp(17) = -6489317565906.8672@:   cOp(18) = 619989648405870.2934@:  cOp(19) = -147748414298680.988@
+    cOp(20) = 849688782354884.2759@:  cOp(21) = 259535074382164.2883@:  cOp(22) = 583666403534889.1494@:  cOp(23) = -4953584075692.6977@
+    cOp(24) = 850260259709754.0725@:  cOp(25) = 147436517215347.0992@:  cOp(26) = 491014245965020.6288@:  cOp(27) = 576460779796930.9778@
+    cOp(28) = 82199524659143.1821@:   cOp(29) = -7165954328048.4288@:   cOp(30) = 783753342645325.5286@:  cOp(31) = -27796037319571.7501@
+    cOp(32) = -842766526041578.1888@: cOp(33) = 178420980956634.426@:   cOp(34) = 620312248530782.8992@:  cOp(35) = 147436592801036.2344@
+    cOp(36) = 850252832242876.1599@:  cOp(37) = -441089059744232.268@:  cOp(38) = 551550672246059.8296@:  cOp(39) = 166280520433.9748@
+    cOp(40) = -843072447184994.304@:  cOp(41) = 465081571739304.8644@:  cOp(42) = 29843883910475.0084@:   cOp(43) = -169242102482309.7089@
+    cOp(44) = 641312586460930.458@:   cOp(45) = 2043492.7755@:
         
     With m_tParams
         
-        For lIndex = 0 To UBound(.pfnAPIs)
+        If bIsInIDE Then
+            lCount = UBound(.pfnAPIs) + 1
+        Else
+            lCount = UBound(.pfnAPIs)
+        End If
+        
+        For lIndex = 0 To lCount - 1
             
             Select Case lIndex
             
@@ -423,3 +439,10 @@ Private Sub Class_Terminate()
     End If
         
 End Sub
+
+Private Function MakeTrue( _
+                 ByRef bValue As Boolean) As Boolean
+    bValue = True
+    MakeTrue = True
+End Function
+
